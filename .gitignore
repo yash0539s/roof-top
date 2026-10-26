@@ -1,0 +1,53 @@
+# --- Python ---
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# --- Environment / secrets ---
+.env
+.env.*
+*.key
+gdrive-credentials*.json
+
+# --- Data and pipeline outputs: versioned by DVC, not Git ---
+# (DVC also writes per-output entries in data/.gitignore, data/processed/.gitignore, models/.gitignore)
+/data/raw/
+/data/processed/
+/models/candidate/
+/models/archive/
+# models/production/ IS committed: it is the approved model the Docker image ships.
+
+# --- MLflow local tracking store ---
+mlflow.db
+mlruns/
+mlartifacts/
+
+# --- Runtime logs ---
+logs/
+*.log
+
+# --- GIS / ArcMap / QGIS temp files ---
+*.sr.lock
+*.ovr.tmp
+*.qgs~
+*.qgz~
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini

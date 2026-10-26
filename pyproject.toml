@@ -1,0 +1,18 @@
+[project]
+name = "kanjikode-roof"
+version = "1.0.0"
+description = "Rooftop material classification for the Kanjikode study area"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore:.*noload.*",
+    "ignore:.*httpx.*",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"

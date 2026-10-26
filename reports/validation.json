@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "rows": 220,
+  "class_counts": {
+    "METAL": 84,
+    "RCC": 72,
+    "TILED": 35,
+    "ASBESTOS": 29
+  },
+  "errors": [],
+  "warnings": [
+    "59 buildings have no photo"
+  ]
+}

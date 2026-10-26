@@ -1,0 +1,47 @@
+seed: 42
+
+data:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  crs_epsg: 32643
+  chip_size: 128
+  layers:
+    guesthouse:
+      prefix: GH
+      shapefile: map1/gis_data/FINAL_UTM.shp
+      raster: null            # orthophoto not in the repo; RGB comes from the attribute table
+      photo_dir: map1/photos
+    commercial:
+      prefix: COM
+      shapefile: map2/gis_data/commercial/commercial_buildings.shp
+      raster: map2/gis_data/commercial/COMMERCIAL.tif
+      photo_dir: map2/photos/commercial
+    industrial:
+      prefix: IND
+      shapefile: map2/gis_data/industrial/industrial_shapefile.shp
+      raster: map2/gis_data/industrial/INDUSTRIAL.tif
+      photo_dir: map2/photos/industrial
+    residential:
+      prefix: RES
+      shapefile: map2/gis_data/residential/residential_buildings.shp
+      raster: map2/gis_data/residential/RESIDENTIAL.tif
+      photo_dir: map2/photos/residential
+
+validate:
+  require_photo: false        # photos cover ~70% of buildings; missing ones are reported, not fatal
+
+train:
+  test_size: 0.2
+  cv_folds: 5
+  cv_repeats: 5
+  candidates: [logreg, random_forest, lightgbm, catboost]
+  optuna_trials: 40           # LightGBM tuning; 0 disables
+  calibrate: true
+  registered_model: roof-classifier
+
+promote:
+  min_macro_f1: 0.75          # requirement floor; the gate also requires >= current production
+
+monitor:
+  drift_psi_threshold: 0.2
+  retrain_new_label_fraction: 0.2

@@ -1,0 +1,12 @@
+{
+  "checked_at": "2026-10-26T10:41:28+00:00",
+  "model_version": "roof-classifier:1",
+  "logged_predictions": 220,
+  "live_predictions": 0,
+  "drift": {},
+  "reasons_to_retrain": [],
+  "note": "fewer than 20 live predictions; drift not assessed",
+  "new_labelled_buildings": 0,
+  "new_label_fraction": 0.0,
+  "retrain_recommended": false
+}

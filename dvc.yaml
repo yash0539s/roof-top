@@ -1,0 +1,83 @@
+stages:
+  build:
+    cmd: python -m src.build_dataset
+    deps:
+      - data/raw
+      - src/build_dataset.py
+      - src/features.py
+      - src/raster.py
+    params:
+      - data
+    outs:
+      - data/processed/buildings.gpkg
+      - data/processed/features.csv
+      - data/processed/chips
+      - reports/data_fixes.json:
+          cache: false
+
+  validate:
+    cmd: python -m src.validate
+    deps:
+      - data/processed/buildings.gpkg
+      - src/validate.py
+    params:
+      - validate
+    outs:
+      - reports/validation.json:
+          cache: false
+
+  train:
+    cmd: python -m src.train
+    deps:
+      - data/processed/features.csv
+      - reports/validation.json
+      - src/train.py
+      - src/models.py
+      - src/features.py
+    params:
+      - seed
+      - train
+    outs:
+      - models/candidate
+      - data/processed/split.json
+      - reports/confusion_matrix.png:
+          cache: false
+      - reports/cv_results.csv:
+          cache: false
+      - reports/feature_importance.csv:
+          cache: false
+    metrics:
+      - reports/metrics.json:
+          cache: false
+
+  promote:
+    cmd: python -m src.promote
+    deps:
+      - models/candidate
+      - reports/validation.json
+      - src/promote.py
+    params:
+      - promote
+    outs:
+      - reports/promotion.json:
+          cache: false
+
+  predict:
+    cmd: python -m src.predict
+    deps:
+      - reports/promotion.json
+      - data/processed/buildings.gpkg
+      - src/predict.py
+      - src/serving.py
+      - qgis/predictions.qml
+    outs:
+      - data/processed/predictions.gpkg
+
+  maps:
+    cmd: python -m src.maps
+    deps:
+      - data/processed/predictions.gpkg
+      - src/maps.py
+    outs:
+      - reports/maps:
+          cache: false

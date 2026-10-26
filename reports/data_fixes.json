@@ -1,0 +1,102 @@
+{
+  "commercial": {
+    "buildings": 32,
+    "elongation": {
+      "legacy_zero_rows": 1,
+      "legacy_median": 1.194,
+      "recomputed_median": 4.255
+    },
+    "compactness": {
+      "legacy_zero_rows": 1,
+      "legacy_median": 0.694,
+      "recomputed_median": 0.694
+    },
+    "mean_r": "no legacy field",
+    "mean_g": "no legacy field",
+    "mean_b": "no legacy field"
+  },
+  "guesthouse": {
+    "buildings": 97,
+    "elongation": {
+      "legacy_zero_rows": 0,
+      "legacy_median": 4.138,
+      "recomputed_median": 4.138
+    },
+    "compactness": {
+      "legacy_zero_rows": 0,
+      "legacy_median": 0.734,
+      "recomputed_median": 0.734
+    },
+    "mean_r": {
+      "legacy_zero_rows": 0,
+      "legacy_median": 149.379,
+      "recomputed_median": 149.379
+    },
+    "mean_g": {
+      "legacy_zero_rows": 0,
+      "legacy_median": 145.712,
+      "recomputed_median": 145.712
+    },
+    "mean_b": {
+      "legacy_zero_rows": 0,
+      "legacy_median": 138.482,
+      "recomputed_median": 138.482
+    }
+  },
+  "industrial": {
+    "buildings": 73,
+    "elongation": {
+      "legacy_zero_rows": 52,
+      "legacy_median": 0.0,
+      "recomputed_median": 4.143
+    },
+    "compactness": {
+      "legacy_zero_rows": 52,
+      "legacy_median": 0.0,
+      "recomputed_median": 0.732
+    },
+    "mean_r": {
+      "legacy_zero_rows": 52,
+      "legacy_median": 0.0,
+      "recomputed_median": 127.394
+    },
+    "mean_g": {
+      "legacy_zero_rows": 52,
+      "legacy_median": 0.0,
+      "recomputed_median": 124.968
+    },
+    "mean_b": {
+      "legacy_zero_rows": 52,
+      "legacy_median": 0.0,
+      "recomputed_median": 127.602
+    }
+  },
+  "residential": {
+    "buildings": 18,
+    "elongation": {
+      "legacy_zero_rows": 0,
+      "legacy_median": 1.145,
+      "recomputed_median": 4.061
+    },
+    "compactness": {
+      "legacy_zero_rows": 0,
+      "legacy_median": 0.762,
+      "recomputed_median": 0.762
+    },
+    "mean_r": {
+      "legacy_zero_rows": 18,
+      "legacy_median": 0.0,
+      "recomputed_median": 139.137
+    },
+    "mean_g": {
+      "legacy_zero_rows": 18,
+      "legacy_median": 0.0,
+      "recomputed_median": 140.813
+    },
+    "mean_b": {
+      "legacy_zero_rows": 18,
+      "legacy_median": 0.0,
+      "recomputed_median": 146.433
+    }
+  }
+}

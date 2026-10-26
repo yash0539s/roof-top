@@ -1,0 +1,222 @@
+schema: '2.0'
+stages:
+  build:
+    cmd: python -m src.build_dataset
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: a8b7e29cccd5340f4fe0012e602008bc.dir
+      size: 1103365994
+      nfiles: 224
+    - path: src/build_dataset.py
+      hash: md5
+      md5: 9809e8b0b546d6ff1e86964a3dfd9e11
+      size: 7933
+    - path: src/features.py
+      hash: md5
+      md5: 7504bfd29925041ab5447e987552caed
+      size: 5715
+    - path: src/raster.py
+      hash: md5
+      md5: 3b9db1aec9446cf88380fd7455dbc680
+      size: 3119
+    params:
+      params.yaml:
+        data:
+          raw_dir: data/raw
+          processed_dir: data/processed
+          crs_epsg: 32643
+          chip_size: 128
+          layers:
+            guesthouse:
+              prefix: GH
+              shapefile: map1/gis_data/FINAL_UTM.shp
+              raster:
+              photo_dir: map1/photos
+            commercial:
+              prefix: COM
+              shapefile: map2/gis_data/commercial/commercial_buildings.shp
+              raster: map2/gis_data/commercial/COMMERCIAL.tif
+              photo_dir: map2/photos/commercial
+            industrial:
+              prefix: IND
+              shapefile: map2/gis_data/industrial/industrial_shapefile.shp
+              raster: map2/gis_data/industrial/INDUSTRIAL.tif
+              photo_dir: map2/photos/industrial
+            residential:
+              prefix: RES
+              shapefile: map2/gis_data/residential/residential_buildings.shp
+              raster: map2/gis_data/residential/RESIDENTIAL.tif
+              photo_dir: map2/photos/residential
+    outs:
+    - path: data/processed/buildings.gpkg
+      hash: md5
+      md5: ae0116ea3cdd50fb4db04fdeab816569
+      size: 221184
+    - path: data/processed/chips
+      hash: md5
+      md5: 5ec32807f3d8fd284e1b04d05ecce5c7.dir
+      size: 1766541
+      nfiles: 123
+    - path: data/processed/features.csv
+      hash: md5
+      md5: 83123445979f2957ac54acca385e4131
+      size: 103721
+    - path: reports/data_fixes.json
+      hash: md5
+      md5: b84d5a4655adae5d78ea843a8e0e70bc
+      size: 2382
+  validate:
+    cmd: python -m src.validate
+    deps:
+    - path: data/processed/buildings.gpkg
+      hash: md5
+      md5: ae0116ea3cdd50fb4db04fdeab816569
+      size: 221184
+    - path: src/validate.py
+      hash: md5
+      md5: 88010d29cb11874f50699bda257d43ca
+      size: 5342
+    params:
+      params.yaml:
+        validate:
+          require_photo: false
+    outs:
+    - path: reports/validation.json
+      hash: md5
+      md5: c1f2d36a0a69ec06addb1d8e0b50dda0
+      size: 211
+  train:
+    cmd: python -m src.train
+    deps:
+    - path: data/processed/features.csv
+      hash: md5
+      md5: 83123445979f2957ac54acca385e4131
+      size: 103721
+    - path: reports/validation.json
+      hash: md5
+      md5: c1f2d36a0a69ec06addb1d8e0b50dda0
+      size: 211
+    - path: src/features.py
+      hash: md5
+      md5: 7504bfd29925041ab5447e987552caed
+      size: 5715
+    - path: src/models.py
+      hash: md5
+      md5: 339b03e776c2cdf1197a8ddac7a08fdf
+      size: 3013
+    - path: src/train.py
+      hash: md5
+      md5: 6a48b5c88b45419dedc6cace1e08b027
+      size: 13731
+    params:
+      params.yaml:
+        seed: 42
+        train:
+          test_size: 0.2
+          cv_folds: 5
+          cv_repeats: 5
+          candidates:
+          - logreg
+          - random_forest
+          - lightgbm
+          - catboost
+          optuna_trials: 40
+          calibrate: true
+          registered_model: roof-classifier
+    outs:
+    - path: data/processed/split.json
+      hash: md5
+      md5: 605fa6ba3774538f48aa3aee454353a9
+      size: 2984
+    - path: models/candidate
+      hash: md5
+      md5: e5285c8303be87b7af2b410e281ae5ef.dir
+      size: 1858761
+      nfiles: 2
+    - path: reports/confusion_matrix.png
+      hash: md5
+      md5: d579d10d3c95de9e6089a4b91a98fbfe
+      size: 28965
+    - path: reports/cv_results.csv
+      hash: md5
+      md5: 5c1490a7a0f077b5aea399fd17444b02
+      size: 271
+    - path: reports/feature_importance.csv
+      hash: md5
+      md5: 8c141210e84ab2c8f1674275408cbfc0
+      size: 479
+    - path: reports/metrics.json
+      hash: md5
+      md5: e752c78676aa99031a1a62fe82a3c7d4
+      size: 2106
+  promote:
+    cmd: python -m src.promote
+    deps:
+    - path: models/candidate
+      hash: md5
+      md5: e5285c8303be87b7af2b410e281ae5ef.dir
+      size: 1858761
+      nfiles: 2
+    - path: reports/validation.json
+      hash: md5
+      md5: c1f2d36a0a69ec06addb1d8e0b50dda0
+      size: 211
+    - path: src/promote.py
+      hash: md5
+      md5: 4290174d6e0db376007b186735ab7f98
+      size: 4997
+    params:
+      params.yaml:
+        promote:
+          min_macro_f1: 0.75
+    outs:
+    - path: reports/promotion.json
+      hash: md5
+      md5: 8da0d4727788d173d1e8357cfde9c86e
+      size: 193
+  predict:
+    cmd: python -m src.predict
+    deps:
+    - path: data/processed/buildings.gpkg
+      hash: md5
+      md5: ae0116ea3cdd50fb4db04fdeab816569
+      size: 221184
+    - path: qgis/predictions.qml
+      hash: md5
+      md5: 6aee5e10d2a20722b1ca2e9fdec5665c
+      size: 3602
+    - path: reports/promotion.json
+      hash: md5
+      md5: 8da0d4727788d173d1e8357cfde9c86e
+      size: 193
+    - path: src/predict.py
+      hash: md5
+      md5: a87e5640bb418f0028a0b9b7fb7e8a1f
+      size: 5954
+    - path: src/serving.py
+      hash: md5
+      md5: 4e2687a4585bd6b8285c4110777af79e
+      size: 3156
+    outs:
+    - path: data/processed/predictions.gpkg
+      hash: md5
+      md5: 9893a8569b7b7cbb1e019aaa8cf85cc5
+      size: 196608
+  maps:
+    cmd: python -m src.maps
+    deps:
+    - path: data/processed/predictions.gpkg
+      hash: md5
+      md5: 9893a8569b7b7cbb1e019aaa8cf85cc5
+      size: 196608
+    - path: src/maps.py
+      hash: md5
+      md5: e7ad75cc1a3651f36dee843a1976ad16
+      size: 4155
+    outs:
+    - path: reports/maps
+      hash: md5
+      md5: 803672c2e35f0be306015ea364742287.dir
+      size: 16165206
+      nfiles: 8

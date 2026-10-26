@@ -1,0 +1,58 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    # Unit, contract, training-smoke and API tests on synthetic data; needs no rasters.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: pytest
+
+  data:
+    # Real-data pipeline when the DVC remote credentials are configured.
+    runs-on: ubuntu-latest
+    needs: test
+    env:
+      GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
+    steps:
+      - uses: actions/checkout@v4
+        if: env.GDRIVE_CREDENTIALS_DATA != ''
+      - uses: actions/setup-python@v5
+        if: env.GDRIVE_CREDENTIALS_DATA != ''
+        with:
+          python-version: "3.12"
+          cache: pip
+      - if: env.GDRIVE_CREDENTIALS_DATA != ''
+        run: |
+          pip install -r requirements.txt
+          dvc pull data/raw.dvc
+          dvc repro validate
+          python -m src.train --quick
+          pytest tests/test_data.py
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t roof-api .
+      - name: smoke test the container
+        run: |
+          docker run -d --name roof -p 8000:8000 roof-api
+          for i in $(seq 1 30); do curl -fs localhost:8000/health && break; sleep 2; done
+          curl -fs localhost:8000/model-info
+          curl -fs -X POST localhost:8000/predict -H 'content-type: application/json' \
+            -d '{"uid":"IND_B12","area_m2":451.66,"perimeter_m":102.05,"mean_r":85.06,"mean_g":105.91,"mean_b":156.42,"std_r":12.03,"std_g":10.59,"std_b":9.26}'
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST localhost:8000/predict -H 'content-type: application/json' -d '{"area_m2":-1}')
+          test "$code" = "422"
+      - if: always()
+        run: docker logs roof || true

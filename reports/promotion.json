@@ -1,0 +1,8 @@
+{
+  "decided_at": "2026-10-26T10:40:01+00:00",
+  "candidate": "roof-classifier:1",
+  "candidate_test_macro_f1": 0.9391,
+  "production_before": null,
+  "promoted": true,
+  "reasons": []
+}
