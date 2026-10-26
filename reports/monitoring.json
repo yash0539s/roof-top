@@ -1,7 +1,7 @@
 {
-  "checked_at": "2026-10-26T10:41:28+00:00",
+  "checked_at": "2026-10-26T10:44:55+00:00",
   "model_version": "roof-classifier:1",
-  "logged_predictions": 220,
+  "logged_predictions": 0,
   "live_predictions": 0,
   "drift": {},
   "reasons_to_retrain": [],

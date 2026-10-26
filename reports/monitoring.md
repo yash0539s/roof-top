@@ -1,6 +1,6 @@
 # Monitoring report — roof-classifier:1
 
-Checked 2026-10-26T10:41:28+00:00. Live predictions: 0 (all logged: 220).
+Checked 2026-10-26T10:44:55+00:00. Live predictions: 0 (all logged: 0).
 
 **Retrain recommended: no**
 
