@@ -23,7 +23,7 @@ def default_model_dir() -> Path:
 
 
 class RoofModel:
-    def __init__(self, model_dir: Path | str | None = None):
+    def __init__(self, model_dir: Path | str | None = None, expected_features: list[str] | None = None):
         self.model_dir = Path(model_dir or default_model_dir())
         model_file = self.model_dir / "model.joblib"
         if not model_file.is_file():
@@ -31,8 +31,8 @@ class RoofModel:
         self.estimator = joblib.load(model_file)
         self.metadata: dict = json.loads((self.model_dir / "metadata.json").read_text())
         self.features: list[str] = self.metadata["features"]
-        if self.features != MODEL_FEATURES:
-            raise ValueError("model was trained on a different feature list than src.features defines")
+        if self.features != (expected_features or MODEL_FEATURES):
+            raise ValueError("model was trained on a different feature list than the code defines")
         self.classes: list[str] = [str(c) for c in self.estimator.classes_]
 
     @property

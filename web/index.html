@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kanjikode Roof Classifier</title>
+  <meta name="description" content="Rooftop material classification for the Kanjikode study area">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 16 16 5l12 11v11H4z' fill='%231f77b4'/%3E%3Cpath d='M2 16 16 3l14 13' stroke='%23d6604d' stroke-width='3' fill='none'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 16 16 5l12 11v11H4z" fill="var(--metal)"/><path d="M2 16 16 3l14 13" stroke="var(--tiled)" stroke-width="3" fill="none"/></svg>
+      <div>
+        <h1>Kanjikode Roof Classifier</h1>
+        <p class="sub">Roof material from footprints and orthophotos</p>
+      </div>
+    </div>
+    <div class="status" id="status">
+      <span class="dot" id="status-dot"></span>
+      <span id="status-text">Connecting…</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="panel">
+      <nav class="tabs" role="tablist">
+        <button role="tab" class="tab active" data-tab="explore" aria-selected="true">Map</button>
+        <button role="tab" class="tab" data-tab="upload" aria-selected="false">Upload</button>
+        <button role="tab" class="tab" data-tab="classify" aria-selected="false">Classify</button>
+        <button role="tab" class="tab" data-tab="model" aria-selected="false">Model</button>
+      </nav>
+
+      <!-- Map explorer -->
+      <section class="tabpanel" id="tab-explore">
+        <div class="stats" id="explore-stats"></div>
+        <div class="field">
+          <label for="f-source">Area</label>
+          <select id="f-source"><option value="">All areas</option></select>
+        </div>
+        <div class="field">
+          <span class="label">Predicted class</span>
+          <div class="chips" id="f-classes"></div>
+        </div>
+        <div class="field row">
+          <label class="check"><input type="checkbox" id="f-errors"> Only misclassified</label>
+          <label class="check"><input type="checkbox" id="f-test"> Only hold-out test set</label>
+        </div>
+        <div class="field">
+          <label for="f-conf">Minimum confidence <output id="f-conf-out">0%</output></label>
+          <input type="range" id="f-conf" min="0" max="100" value="0" step="5">
+        </div>
+        <div class="field">
+          <label for="f-search">Find building</label>
+          <input type="search" id="f-search" placeholder="e.g. IND_B12" autocomplete="off" list="uid-list">
+          <datalist id="uid-list"></datalist>
+        </div>
+        <div id="detail" class="detail empty">Click a roof on the map to see its prediction, roof chip and field photo.</div>
+      </section>
+
+      <!-- Upload an image -->
+      <section class="tabpanel" id="tab-upload" hidden>
+        <ol class="steps">
+          <li id="step-file" class="step active">
+            <h3>1 · Upload an image</h3>
+            <label class="drop" id="drop">
+              <input type="file" id="up-file" accept=".jpg,.jpeg,.png,.webp,.tif,.tiff,image/jpeg,image/png,image/webp,image/tiff" hidden>
+              <span id="drop-text"><b>Choose a satellite or drone image</b><br>or drop it here · JPG, PNG, WebP or GeoTIFF</span>
+            </label>
+            <div id="up-info" class="meta"></div>
+          </li>
+          <li id="step-details" class="step">
+            <h3>2 · Location</h3>
+            <div class="grid2">
+              <div class="field"><label for="up-lat">Latitude</label><input id="up-lat" name="latitude" type="number" step="any" placeholder="10.7925"></div>
+              <div class="field"><label for="up-lon">Longitude</label><input id="up-lon" name="longitude" type="number" step="any" placeholder="76.7420"></div>
+            </div>
+            <p class="hint small"><button type="button" class="link" id="up-pick">Pick the location on the map</button></p>
+            <div class="actions"><button type="button" id="up-submit" class="primary" disabled>Find &amp; classify roofs</button></div>
+          </li>
+        </ol>
+        <div id="up-result" class="result" hidden></div>
+        <div id="up-manual" class="manual" hidden>
+          <p class="hint small">Missed a roof? <button type="button" class="link" id="up-draw">Draw it on the image</button></p>
+        </div>
+      </section>
+
+      <!-- Classify -->
+      <section class="tabpanel" id="tab-classify" hidden>
+        <p class="hint">Enter a building's geometry and colour statistics, or <button class="link" id="draw-btn" type="button">draw a roof on the map</button>.</p>
+        <form id="predict-form" novalidate>
+          <div class="grid2">
+            <div class="field"><label for="uid">UID</label><input id="uid" name="uid" placeholder="optional"></div>
+            <div class="field"></div>
+            <div class="field"><label for="area_m2">Area (m²)</label><input id="area_m2" name="area_m2" type="number" step="any" required></div>
+            <div class="field"><label for="perimeter_m">Perimeter (m)</label><input id="perimeter_m" name="perimeter_m" type="number" step="any" required></div>
+          </div>
+          <fieldset>
+            <legend>Mean colour (0–255)</legend>
+            <div class="grid3">
+              <div class="field"><label for="mean_r">R</label><input id="mean_r" name="mean_r" type="number" step="any" required></div>
+              <div class="field"><label for="mean_g">G</label><input id="mean_g" name="mean_g" type="number" step="any" required></div>
+              <div class="field"><label for="mean_b">B</label><input id="mean_b" name="mean_b" type="number" step="any" required></div>
+            </div>
+            <div class="swatch" id="swatch" aria-hidden="true"></div>
+          </fieldset>
+          <fieldset>
+            <legend>Colour standard deviation</legend>
+            <div class="grid3">
+              <div class="field"><label for="std_r">R</label><input id="std_r" name="std_r" type="number" step="any" required></div>
+              <div class="field"><label for="std_g">G</label><input id="std_g" name="std_g" type="number" step="any" required></div>
+              <div class="field"><label for="std_b">B</label><input id="std_b" name="std_b" type="number" step="any" required></div>
+            </div>
+          </fieldset>
+          <details>
+            <summary>Texture features (optional, improves accuracy)</summary>
+            <div class="grid2" id="texture-fields"></div>
+          </details>
+          <div class="actions">
+            <button type="submit" class="primary">Classify roof</button>
+            <button type="button" id="fill-example">Load example</button>
+            <button type="button" id="fill-random">Random real building</button>
+          </div>
+        </form>
+        <div id="predict-result" class="result" hidden></div>
+      </section>
+
+      <!-- Model -->
+      <section class="tabpanel" id="tab-model" hidden>
+        <div id="model-body"><p class="hint">Loading model information…</p></div>
+      </section>
+    </aside>
+
+    <section class="mapwrap">
+      <div id="map" aria-label="Map of buildings coloured by predicted roof material"></div>
+      <div id="imgview" hidden aria-label="Uploaded image"></div>
+      <div class="viewswitch" id="viewswitch" hidden>
+        <button type="button" data-view="image" class="active">Image</button>
+        <button type="button" data-view="map">Map</button>
+      </div>
+      <div class="legend" id="legend"></div>
+      <div class="map-msg" id="map-msg" hidden></div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

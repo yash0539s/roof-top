@@ -1,0 +1,8 @@
+# Optional: MobileSAM roof detection for /predict/image/auto (CPU only).
+# Without these, the API falls back to the simpler segmentation-rules detector.
+#   pip install -r requirements-sam.txt --extra-index-url https://download.pytorch.org/whl/cpu
+#   python scripts/download_sam.py
+torch==2.14.1
+torchvision==0.29.1
+timm==1.0.30
+mobile_sam @ git+https://github.com/ChaoningZhang/MobileSAM.git

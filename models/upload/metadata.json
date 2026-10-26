@@ -1,0 +1,65 @@
+{
+  "model_version": "roof-upload:1",
+  "algorithm": "catboost (sigmoid-calibrated)",
+  "features": [
+    "compactness",
+    "elongation",
+    "mean_r",
+    "mean_g",
+    "mean_b",
+    "std_r",
+    "std_g",
+    "std_b",
+    "brightness",
+    "r_ratio",
+    "g_ratio",
+    "b_ratio",
+    "hue_sin",
+    "hue_cos",
+    "sat_mean",
+    "val_std",
+    "glcm_contrast",
+    "glcm_homogeneity",
+    "glcm_energy",
+    "glcm_entropy",
+    "glcm_correlation",
+    "lbp_entropy",
+    "lbp_flat_frac",
+    "edge_density",
+    "edge_coherence"
+  ],
+  "classes": [
+    "ASBESTOS",
+    "METAL",
+    "RCC",
+    "TILED"
+  ],
+  "train_gsds_m": [
+    0.1,
+    0.15,
+    0.2,
+    0.3,
+    0.4
+  ],
+  "training_rows": 1407,
+  "training_roofs": 123,
+  "trained_at": "2026-10-26T11:09:12+00:00",
+  "metrics": {
+    "cv": "5-fold StratifiedGroupKFold by building (all resolutions of a roof in one fold)",
+    "macro_f1_all": 0.7816,
+    "accuracy_all": 0.7982,
+    "macro_f1_degraded": 0.7732,
+    "macro_f1_by_gsd_clean": {
+      "0.1": 0.5813,
+      "0.15": 0.5813,
+      "0.2": 0.797,
+      "0.3": 0.8055,
+      "0.4": 0.8133
+    },
+    "grouped_by_source_macro_f1": {
+      "commercial": 0.6629,
+      "industrial": 0.3171,
+      "residential": 0.7867
+    }
+  }
+}

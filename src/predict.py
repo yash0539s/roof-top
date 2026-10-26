@@ -69,6 +69,21 @@ def embed_qgis_style(gpkg: Path, layer: str) -> None:
         con.close()
 
 
+def write_web_geojson(gdf: gpd.GeoDataFrame, path: Path) -> None:
+    """WGS84 copy for the web map. Photo/chip paths stay server side; only flags are exposed."""
+    web = gdf.drop(columns=[c for c in ("photo", "chip", "predicted_at") if c in gdf]).copy()
+    web["has_photo"] = gdf["photo"].notna() if "photo" in gdf else False
+    web["has_chip"] = gdf["chip"].notna() if "chip" in gdf else False
+    for c in web.columns:
+        if c.startswith("prob_") or c == "confidence":
+            web[c] = web[c].round(4)
+    web = web.to_crs(epsg=4326)
+    web["geometry"] = web.geometry.set_precision(1e-7)
+    if path.exists():
+        path.unlink()
+    web.to_file(path, driver="GeoJSON")
+
+
 def predict(input_path: Path | None = None, raster: Path | None = None, source: str = "new",
             model_dir: Path | None = None, output: Path | None = None) -> gpd.GeoDataFrame:
     model = RoofModel(model_dir)
@@ -98,6 +113,7 @@ def predict(input_path: Path | None = None, raster: Path | None = None, source: 
         output.unlink()
     out.to_file(output, layer="predictions", driver="GPKG")
     embed_qgis_style(output, "predictions")
+    write_web_geojson(out.join(gdf[MODEL_FEATURES].round(4)), output.with_suffix(".geojson"))
     PredictionLogger(prediction_log_path()).log(gdf[MODEL_FEATURES], preds, source="batch", uids=out["UID"])
 
     summary = {"model_version": model.version, "buildings": len(out),

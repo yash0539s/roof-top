@@ -72,6 +72,7 @@ stages:
       - qgis/predictions.qml
     outs:
       - data/processed/predictions.gpkg
+      - data/processed/predictions.geojson
 
   maps:
     cmd: python -m src.maps

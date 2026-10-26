@@ -27,7 +27,9 @@ gdrive-credentials*.json
 /data/processed/
 /models/candidate/
 /models/archive/
-# models/production/ IS committed: it is the approved model the Docker image ships.
+# models/production/ and models/upload/ ARE committed: the Docker image ships them.
+# MobileSAM weights (40 MB) are downloaded by scripts/download_sam.py instead.
+/models/sam/
 
 # --- MLflow local tracking store ---
 mlflow.db
